@@ -137,7 +137,7 @@ All three features leverage:
   - Required permissions: `repo` (full), `workflow`
 - **Target GitHub Repository** - The repo you want to generate tests for
 
-## 🚀 Quick Start
+## 🚀 Quick Start (New & Improved!)
 
 ### 1. Clone and Install
 
@@ -152,26 +152,30 @@ pip install -r requirements.txt
 cd ..
 ```
 
-### 2. Configure Environment
+### 2. Run Interactive Onboarding
 
 ```bash
-# Copy example environment file
-cp env.example .env
-
-# Edit .env with your credentials
-nano .env
+# Run the onboarding script
+python onboard.py
 ```
 
-Add your configuration:
-```bash
-# OpenAI Configuration (Required)
-OPENAI_API_KEY=sk-your-actual-api-key-here
-OPENAI_MODEL=gpt-4o-mini
+**The onboarding script will:**
+- ✅ Validate your OpenAI API key with a real API call
+- ✅ Validate your GitHub token and check permissions
+- ✅ Verify repository access
+- ✅ Auto-detect your test framework (pytest, jest, etc.)
+- ✅ Analyze your repository structure
+- ✅ Guide you through optional configuration
+- ✅ Generate `.env` file with all your settings
+- ✅ Track state for seamless re-configuration
 
-# GitHub Configuration (Required)
-GITHUB_TOKEN=ghp_your_actual_token_here
-GITHUB_REPO=owner/repository-name
-```
+**Choose your setup method:**
+- **Option 1: Guided Setup** (Recommended) - 3-5 minutes
+  - Step-by-step with validation and auto-detection
+- **Option 2: Manual Setup** - 1-2 minutes
+  - For experienced users who prefer editing `.env` directly
+
+See [ONBOARDING_GUIDE.md](ONBOARDING_GUIDE.md) for detailed walkthrough.
 
 ### 3. Start the Service
 
@@ -183,9 +187,16 @@ python -m uvicorn app.main:app --reload --port 8000
 You should see:
 ```
 INFO:     Started server process
-INFO:     Waiting for application startup.
-INFO:     Starting GitHub Test Authoring Tool API
-INFO:     Application startup complete.
+INFO:     ════════════════════════════════════════════════════════════
+INFO:     Configuration loaded successfully!
+INFO:     ════════════════════════════════════════════════════════════
+INFO:     Repository: owner/repository-name
+INFO:     Framework: pytest
+INFO:     Language: Python
+INFO:     Features enabled: Test Generation, Coverage Analysis, Test Optimization
+INFO:     ════════════════════════════════════════════════════════════
+INFO:     Ready to generate tests! 🚀
+INFO:     ════════════════════════════════════════════════════════════
 ```
 
 ### 4. Create a GitHub Issue

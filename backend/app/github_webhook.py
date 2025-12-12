@@ -12,6 +12,7 @@ from app.llm.test_author import TestAuthor
 from app.publisher.git_operations import GitOperations
 from app.optimizers.test_optimizer import TestCaseOptimizer
 from app.coverage.coverage_analyzer import CoverageAnalyzer
+from app.config.state_manager import update_state
 
 logger = logging.getLogger(__name__)
 
@@ -190,6 +191,11 @@ class TestGenerationService:
                 )
             
             logger.info(f"✅ Test generation complete for issue #{issue_number}")
+            
+            # Update state after successful test generation
+            update_state("test_generation", {
+                "issue_number": issue_number
+            })
             
             return GenerateTestsResponse(
                 success=True,
