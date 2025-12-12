@@ -2,8 +2,6 @@
 
 An intelligent test automation platform that provides AI-powered test generation, coverage analysis, and test optimization for GitHub repositories.
 
-**🚀 New: Interactive Onboarding** - Get started in 3-5 minutes with our guided setup process that validates your credentials and auto-detects your repository configuration!
-
 ## 🎯 Overview
 
 This tool provides **three independent capabilities** to enhance your testing workflow:
