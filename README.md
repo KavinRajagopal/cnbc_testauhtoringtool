@@ -1,60 +1,133 @@
 # GitHub Test Authoring Tool - POC
 
-An intelligent test authoring system that automatically generates tests from GitHub issues using AI and codebase context.
+An intelligent test automation platform that provides AI-powered test generation, coverage analysis, and test optimization for GitHub repositories.
 
 ## 🎯 Overview
 
-This POC automatically generates test cases when you create GitHub issues with acceptance criteria. The tool:
+This tool provides **three independent capabilities** to enhance your testing workflow:
+
+### 1️⃣ **Test Case Generation**
+Generate comprehensive test cases automatically from GitHub issues with acceptance criteria.
 - Analyzes your repository structure
 - Detects your test framework (pytest, jest, playwright, etc.)
-- Searches for relevant code
+- Searches for relevant code using GitHub Code Search API
 - Generates tests using OpenAI with codebase context
 - Creates a PR with the generated tests
-- Posts results as a comment on the issue
+- Posts results as comments on the issue
+
+### 2️⃣ **Test Coverage Analysis**
+Measure and analyze test coverage to identify gaps in your test suite.
+- Runs coverage analysis on your test suite
+- Compares before/after coverage when new tests are added
+- Identifies specific uncovered code sections (lines, functions, branches)
+- Generates comprehensive coverage reports
+- Posts coverage reports to GitHub issues
+
+### 3️⃣ **Test Optimization**
+Analyze your test suite for quality and efficiency improvements.
+- Detects similar test cases (>70% similarity threshold)
+- Identifies redundant or outdated tests
+- Provides AI-powered optimization suggestions
+- Recommends parameterization and fixture improvements
+- Generates quality scores with actionable recommendations
+
+Each functionality can be **enabled/disabled independently** via configuration.
 
 ## 🏗️ Architecture
 
 ```
-┌──────────────┐      ┌──────────────────┐      ┌─────────────┐
-│ GitHub Issue │─────>│   FastAPI App    │─────>│   OpenAI    │
-│   (Manual)   │      │  (Backend API)   │      │  GPT-4 API  │
-└──────────────┘      └──────────────────┘      └─────────────┘
-                              │
-                              │ Analyzes Repo
-                              ▼
-                     ┌──────────────────┐
-                     │  GitHub Code     │
-                     │  Search API      │
-                     └──────────────────┘
-                              │
-                              │ Generates Tests
-                              ▼
-                     ┌──────────────────┐
-                     │   New Branch +   │
-                     │   Test Files +   │
-                     │   Pull Request   │
-                     └──────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                    GitHub Test Authoring Tool                   │
+│                                                                 │
+│  ┌───────────────────────────────────────────────────────────┐ │
+│  │                    Core Capabilities                      │ │
+│  │                                                           │ │
+│  │  1️⃣ Test Generation    2️⃣ Coverage Analysis    3️⃣ Optimization │ │
+│  │     │                      │                      │       │ │
+│  │     ├─ Issue Parser       ├─ Python Coverage    ├─ Similarity   │ │
+│  │     ├─ Code Search        ├─ JS Coverage        ├─ Redundancy   │ │
+│  │     ├─ AI Generation      ├─ Gap Analyzer       ├─ AI Suggestions│ │
+│  │     └─ Test Writer        └─ Report Builder     └─ Quality Score │ │
+│  └───────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│  ┌────────────────────────┐    ┌─────────────────────────────┐ │
+│  │  GitHub Data Reader    │    │   GitHub Publisher          │ │
+│  │                        │    │                             │ │
+│  │  • Fetch Issues        │    │  • Create Branches          │ │
+│  │  • Search Code         │    │  • Commit Files             │ │
+│  │  • Clone Repository    │    │  • Create Pull Requests     │ │
+│  │  • Detect Framework    │    │  • Post Issue Comments      │ │
+│  └────────────────────────┘    └─────────────────────────────┘ │
+│                                                                 │
+│  ┌───────────────────────────────────────────────────────────┐ │
+│  │                  Supporting Tools                         │ │
+│  │                                                           │ │
+│  │  • OpenAI Integration    • Framework Detector            │ │
+│  │  • AST Analyzer          • Coverage Tools Runner         │ │
+│  │  • Embeddings Engine     • Markdown Report Builder       │ │
+│  └───────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────┘
+
+                    ▲                          │
+                    │                          ▼
+            ┌───────────────┐          ┌──────────────┐
+            │ GitHub Issues │          │ GitHub Repo  │
+            │   + PRs       │          │  (Tests +    │
+            └───────────────┘          │   Reports)   │
+                                       └──────────────┘
 ```
 
-## ✨ Features
+## ✨ Three Core Features
 
-- **GitHub Integration**: Fetches issues with acceptance criteria
-- **Smart Code Search**: Finds relevant code using GitHub Code Search API
-- **Framework Detection**: Auto-detects pytest, jest, playwright, mocha, vitest, unittest
-- **AI-Powered**: Uses OpenAI with codebase context for accurate test generation
-- **Test Case Optimization** 🆕: Comprehensive quality analysis including:
-  - Similarity detection (flags tests >70% similar)
-  - AI-powered optimization suggestions
-  - Redundancy and outdated code detection
-  - Quality score with actionable recommendations
-- **Test Coverage Analysis** 🆕: Automatic coverage measurement including:
-  - Before/after coverage comparison
-  - Per-module coverage breakdown
-  - Coverage gap identification
-  - Actionable recommendations for uncovered code
-- **Auto Publishing**: Creates branch, commits tests, opens PR automatically
-- **Issue Comments**: Posts results and PR link directly on the issue
-- **Multi-Language**: Supports Python (pytest/unittest) and JavaScript/TypeScript (jest/playwright/mocha/vitest)
+### 🤖 Feature 1: Test Case Generation
+**Endpoint**: `POST /github/generate-tests`
+
+Automatically generates test cases from GitHub issue acceptance criteria:
+- Fetches issue details and acceptance criteria
+- Detects test framework (pytest, jest, playwright, mocha, vitest, unittest)
+- Searches for relevant code using GitHub Code Search API
+- Generates tests using OpenAI with codebase context
+- Creates branch + commits tests + opens PR
+- Posts results as issue comment
+
+**Use Case**: You create a GitHub issue with acceptance criteria → Tool generates complete test suite
+
+---
+
+### 📊 Feature 2: Test Coverage Analysis
+**Endpoint**: `POST /github/analyze-coverage`
+
+Measures test coverage and identifies gaps:
+- Runs coverage analysis (Python: pytest-cov, JavaScript: jest/nyc)
+- Compares before/after coverage when tests are added
+- Identifies uncovered lines, functions, and branches
+- Generates per-module coverage breakdown
+- Posts comprehensive coverage report to GitHub issue
+
+**Use Case**: Understand what parts of your code are tested and what needs coverage
+
+---
+
+### 🎯 Feature 3: Test Case Optimization
+**Endpoint**: `POST /github/optimize-tests`
+
+Analyzes test suite quality and suggests improvements:
+- **Similarity Detection**: Flags tests >70% similar using embeddings
+- **Redundancy Detection**: Identifies duplicate or outdated tests via AST analysis
+- **AI Suggestions**: Recommends parameterization, fixture improvements, better assertions
+- **Quality Score**: Provides overall quality rating with actionable recommendations
+
+**Use Case**: Clean up your test suite, reduce duplication, improve maintainability
+
+---
+
+## 🔧 Supporting Capabilities
+
+All three features leverage:
+- **GitHub Integration**: Read issues, search code, create PRs, post comments
+- **Framework Detection**: Auto-detect test framework from repository
+- **AI-Powered Analysis**: OpenAI GPT-4 for intelligent generation and suggestions
+- **Multi-Language Support**: Python (pytest/unittest) and JavaScript/TypeScript (jest/playwright/mocha/vitest)
 
 ## 📋 Prerequisites
 
@@ -134,9 +207,9 @@ We need to implement user authentication for the application.
 - AC5: User can logout successfully
 ```
 
-### 5. Generate Tests
+### 5. Use the Features
 
-Trigger test generation using curl or any HTTP client:
+#### Option A: Generate Tests from Issue
 
 ```bash
 curl -X POST http://localhost:8000/github/generate-tests \
@@ -144,24 +217,111 @@ curl -X POST http://localhost:8000/github/generate-tests \
   -d '{"issue_number": 123}'
 ```
 
-Replace `123` with your actual issue number.
+**What happens:**
+1. Fetches issue #123 from GitHub
+2. Detects test framework
+3. Searches for relevant code
+4. Generates tests with AI
+5. Creates branch `auto-tests/issue-123`
+6. Commits test file
+7. Creates pull request
+8. (Optional) Runs optimization analysis
+9. (Optional) Runs coverage analysis
+10. Posts results to issue
+
+#### Option B: Analyze Coverage Only
+
+```bash
+curl -X POST http://localhost:8000/github/analyze-coverage \
+  -H "Content-Type: application/json" \
+  -d '{"test_path": "tests/", "include_gaps": true}'
+```
+
+**What happens:**
+1. Clones repository locally
+2. Runs coverage tools
+3. Identifies uncovered code
+4. Generates coverage report
+5. Posts report to GitHub issue
+
+#### Option C: Optimize Existing Tests
+
+```bash
+curl -X POST http://localhost:8000/github/optimize-tests \
+  -H "Content-Type: application/json" \
+  -d '{"test_path": "tests/", "similarity_threshold": 0.7}'
+```
+
+**What happens:**
+1. Analyzes all test files
+2. Detects similar tests using embeddings
+3. Identifies redundant/outdated tests
+4. Gets AI optimization suggestions
+5. Generates quality report
+6. Posts recommendations to GitHub
 
 ### 6. Check Results
 
-The tool will:
-1. ✅ Fetch the issue from GitHub
-2. ✅ Detect your test framework
-3. ✅ Search for relevant code
-4. ✅ Generate tests with AI
-5. ✅ Create branch `auto-tests/issue-123`
-6. ✅ Commit test file
-7. ✅ Create pull request
-8. ✅ Comment on the issue with PR link
+Check your GitHub repository for:
+- **Test Generation**: New branch, pull request, issue comment with test preview
+- **Coverage Analysis**: Issue comment with coverage report and gaps
+- **Test Optimization**: Issue comment with quality score and recommendations
 
-Check your repository for:
-- New branch: `auto-tests/issue-123`
-- Pull request with generated tests
-- Comment on the original issue
+## 🔄 How Features Work Together
+
+The three features can be used **independently** or **together**:
+
+### Independent Usage
+
+```bash
+# Just generate tests
+curl -X POST http://localhost:8000/github/generate-tests -d '{"issue_number": 123}'
+
+# Just analyze coverage  
+curl -X POST http://localhost:8000/github/analyze-coverage
+
+# Just optimize tests
+curl -X POST http://localhost:8000/github/optimize-tests
+```
+
+### Combined Usage
+
+When you **generate tests** with optimization and coverage **enabled**:
+
+```bash
+# In .env
+ENABLE_OPTIMIZATION=true
+ENABLE_COVERAGE_ANALYSIS=true
+
+# Single API call
+curl -X POST http://localhost:8000/github/generate-tests -d '{"issue_number": 123}'
+```
+
+**This will:**
+1. Generate tests from issue
+2. Analyze the generated tests for quality (optimization)
+3. Run coverage to show impact (coverage)
+4. Create PR with all three reports
+
+### Typical Workflows
+
+**Workflow 1: New Feature Development**
+1. Create GitHub issue with acceptance criteria
+2. Call `generate-tests` → Get tests + optimization + coverage
+3. Review PR, merge if satisfied
+
+**Workflow 2: Improve Existing Tests**
+1. Call `optimize-tests` on existing test suite
+2. Review quality report and suggestions
+3. Refactor tests based on recommendations
+4. Call `analyze-coverage` to verify improvement
+
+**Workflow 3: Coverage Sprint**
+1. Call `analyze-coverage` to see current state
+2. Identify gaps in coverage report
+3. Create issues for uncovered functionality
+4. Call `generate-tests` for each issue
+5. Re-run `analyze-coverage` to track progress
 
 ## 📁 Project Structure
 
@@ -170,30 +330,55 @@ cnbc_testauhtoringtool/
 ├── backend/
 │   ├── app/
 │   │   ├── main.py                      # FastAPI app entry point
-│   │   ├── github_webhook.py            # GitHub webhook handler & orchestration
-│   │   ├── github/
-│   │   │   ├── client.py                # GitHub API client
+│   │   ├── github_webhook.py            # API endpoints & orchestration
+│   │   │
+│   │   ├── github/                      # 📥 GitHub Data Reader
+│   │   │   ├── client.py                # GitHub API client (fetch issues, search, clone)
 │   │   │   └── code_search.py           # Code context builder
-│   │   ├── llm/
-│   │   │   ├── author.py                # Legacy Playwright generator
-│   │   │   └── test_author.py           # New framework-agnostic generator
-│   │   ├── detectors/
+│   │   │
+│   │   ├── publisher/                   # 📤 GitHub Publisher
+│   │   │   └── git_operations.py        # Git operations (branch, commit, PR, comments)
+│   │   │
+│   │   ├── coverage/                    # 📊 Feature 2: Coverage Analysis
+│   │   │   ├── coverage_analyzer.py     # Main coverage orchestrator
+│   │   │   ├── python_coverage.py       # Python coverage runner
+│   │   │   ├── javascript_coverage.py   # JavaScript coverage runner
+│   │   │   ├── gap_analyzer.py          # Identifies uncovered code
+│   │   │   └── report_builder.py        # Generates coverage reports
+│   │   │
+│   │   ├── optimizers/                  # 🎯 Feature 3: Test Optimization
+│   │   │   ├── test_optimizer.py        # Main optimization orchestrator
+│   │   │   ├── similarity_analyzer.py   # Detects similar tests
+│   │   │   ├── redundancy_detector.py   # Finds redundant/outdated tests
+│   │   │   ├── ai_suggestions.py        # AI-powered recommendations
+│   │   │   └── report_builder.py        # Generates optimization reports
+│   │   │
+│   │   ├── llm/                         # 🤖 Feature 1: Test Generation
+│   │   │   └── test_author.py           # AI test generator
+│   │   │
+│   │   ├── detectors/                   # 🔧 Supporting Tools
 │   │   │   └── test_framework.py        # Test framework detector
-│   │   ├── publisher/
-│   │   │   └── git_operations.py        # Git operations (branch, PR, etc.)
-│   │   └── models/
-│   │       ├── github_issue.py          # GitHub issue models
-│   │       └── jira_issue.py            # Legacy JIRA models
-│   ├── requirements.txt
-│   └── Dockerfile
-├── .env.example                          # Environment variables template
-├── README.md                             # This file
-└── playwright.config.ts                  # Playwright configuration
+│   │   │
+│   │   └── models/                      # 📋 Data Models
+│   │       └── github_issue.py          # Pydantic models
+│   │
+│   ├── requirements.txt                 # Python dependencies
+│   └── Dockerfile                       # Container configuration
+│
+├── docs/                                 # 📚 Documentation
+│   ├── COVERAGE_GUIDE.md
+│   ├── TEST_OPTIMIZATION_GUIDE.md
+│   └── README.md
+│
+├── examples/                            # 💡 Usage Examples
+├── .env.example                         # Environment template
+├── docker-compose.yml                   # Docker setup
+└── README.md                            # This file
 ```
 
 ## 🔌 API Endpoints
 
-### Generate Tests
+### 1️⃣ Generate Tests from Issue
 
 ```bash
 POST /github/generate-tests
@@ -214,25 +399,105 @@ Content-Type: application/json
   "branch_name": "auto-tests/issue-123",
   "pull_request_url": "https://github.com/owner/repo/pull/456",
   "test_files": ["tests/test_user_authentication_issue_123.py"],
-  "error": null
+  "optimization_report": {
+    "quality_score": 8,
+    "similar_tests": 0,
+    "suggestions": ["Consider parameterizing test cases"]
+  },
+  "coverage_report": {
+    "overall_coverage": 85.5,
+    "new_coverage": 12.3,
+    "uncovered_lines": 47
+  }
 }
 ```
 
-### Health Check
+**Notes:**
+- Optimization report included if `ENABLE_OPTIMIZATION=true`
+- Coverage report included if `ENABLE_COVERAGE_ANALYSIS=true`
+
+---
+
+### 2️⃣ Analyze Test Coverage
 
 ```bash
-GET /github/health
+POST /github/analyze-coverage
+Content-Type: application/json
+
+{
+  "repo_override": "owner/repo",  // optional
+  "test_path": "tests/",          // optional, defaults to all tests
+  "include_gaps": true            // optional, defaults to true
+}
 ```
 
 **Response:**
 ```json
 {
-  "status": "ok",
-  "service": "github-test-generator"
+  "success": true,
+  "overall_coverage": 85.5,
+  "modules": [
+    {
+      "name": "src/auth.py",
+      "coverage": 92.3,
+      "lines_covered": 120,
+      "lines_total": 130
+    }
+  ],
+  "uncovered_gaps": [
+    {
+      "file": "src/auth.py",
+      "lines": [45, 46, 47],
+      "reason": "Error handling not tested"
+    }
+  ],
+  "recommendations": ["Add tests for error handling in auth module"]
 }
 ```
 
-### Main Health Check
+---
+
+### 3️⃣ Optimize Test Suite
+
+```bash
+POST /github/optimize-tests
+Content-Type: application/json
+
+{
+  "test_path": "tests/",          // optional, defaults to all tests
+  "similarity_threshold": 0.7,    // optional, defaults to 0.7
+  "repo_override": "owner/repo"   // optional
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "quality_score": 7,
+  "similar_tests": [
+    {
+      "test1": "test_login_valid_user",
+      "test2": "test_login_authenticated_user",
+      "similarity": 0.85
+    }
+  ],
+  "redundant_tests": [
+    {
+      "test": "test_old_feature",
+      "reason": "References deleted module 'old_api.py'"
+    }
+  ],
+  "ai_suggestions": [
+    "Consider parameterizing test_login_* tests",
+    "Extract common setup into fixture"
+  ]
+}
+```
+
+---
+
+### Health Check
 
 ```bash
 GET /health
@@ -241,7 +506,13 @@ GET /health
 **Response:**
 ```json
 {
-  "status": "ok"
+  "status": "ok",
+  "service": "github-test-authoring-tool",
+  "features": {
+    "test_generation": true,
+    "coverage_analysis": true,
+    "test_optimization": true
+  }
 }
 ```
 
@@ -389,7 +660,7 @@ cat .env | grep GITHUB
 
 ## 🔧 Configuration
 
-### Environment Variables
+### Core Environment Variables
 
 | Variable | Required | Description | Default |
 |----------|----------|-------------|---------|
@@ -398,6 +669,31 @@ cat .env | grep GITHUB
 | `GITHUB_TOKEN` | Yes | GitHub personal access token | - |
 | `GITHUB_REPO` | Yes | Target repository (owner/repo) | - |
 | `LOG_LEVEL` | No | Logging level | `INFO` |
+
+### Feature Toggles
+
+Enable/disable each of the three core features:
+
+```bash
+# Feature 1: Test Generation (always available)
+# No toggle needed - this is the base feature
+
+# Feature 2: Coverage Analysis (optional)
+ENABLE_COVERAGE_ANALYSIS=true
+PYTHON_COVERAGE_TOOL=pytest-cov
+JAVASCRIPT_COVERAGE_TOOL=jest
+COVERAGE_TIMEOUT_SECONDS=300
+COVERAGE_INCLUDE_GAPS=true
+
+# Feature 3: Test Optimization (optional)
+ENABLE_OPTIMIZATION=true
+ENABLE_SIMILARITY_DETECTION=true
+ENABLE_AI_SUGGESTIONS=true
+ENABLE_REDUNDANCY_DETECTION=true
+SIMILARITY_THRESHOLD=0.7
+```
+
+**Note**: Test generation always runs. Coverage and optimization are optional add-ons that enhance the results.
 
 ### Customizing Test Generation
 
