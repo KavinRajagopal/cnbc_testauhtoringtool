@@ -1,6 +1,8 @@
-# GitHub Test Authoring Tool - POC
+# GitHub Test Authoring Tool
 
 An intelligent test automation platform that provides AI-powered test generation, coverage analysis, and test optimization for GitHub repositories.
+
+**🚀 New: Interactive Onboarding** - Get started in 3-5 minutes with our guided setup process that validates your credentials and auto-detects your repository configuration!
 
 ## 🎯 Overview
 
@@ -131,19 +133,35 @@ All three features leverage:
 
 ## 📋 Prerequisites
 
-- **Python 3.11+**
-- **OpenAI API Key** - [Get one here](https://platform.openai.com/api-keys)
-- **GitHub Personal Access Token** - [Create one here](https://github.com/settings/tokens)
-  - Required permissions: `repo` (full), `workflow`
-- **Target GitHub Repository** - The repo you want to generate tests for
+Before you start, ensure you have:
 
-## 🚀 Quick Start (New & Improved!)
+### Required
+- **Python 3.11+** - [Download here](https://www.python.org/downloads/)
+- **pip** - Python package manager (comes with Python)
+- **git** - For repository operations
+
+### API Credentials (Collected during onboarding)
+- **OpenAI API Key** - [Get one here](https://platform.openai.com/api-keys)
+  - Make sure you have credits added to your account
+  - The onboarding script will test this with a real API call
+  
+- **GitHub Personal Access Token** - [Create one here](https://github.com/settings/tokens)
+  - Required permissions: `repo` (full control), `workflow`
+  - The onboarding script will verify these permissions
+
+### Target Repository
+- **GitHub Repository** - The repo you want to generate tests for
+  - Must contain code in a supported language (Python or JavaScript/TypeScript)
+  - Must use a supported test framework (pytest, jest, playwright, mocha, vitest, unittest)
+  - You need read/write access (the onboarding script will verify this)
+
+## 🚀 Quick Start
 
 ### 1. Clone and Install
 
 ```bash
 # Clone the repository
-git clone <your-repo-url>
+git clone https://github.com/KavinRajagopal/cnbc_testauhtoringtool.git
 cd cnbc_testauhtoringtool
 
 # Install Python dependencies
@@ -152,7 +170,7 @@ pip install -r requirements.txt
 cd ..
 ```
 
-### 2. Run Interactive Onboarding
+### 2. Run Interactive Onboarding ✨ NEW
 
 ```bash
 # Run the onboarding script
@@ -162,20 +180,25 @@ python onboard.py
 **The onboarding script will:**
 - ✅ Validate your OpenAI API key with a real API call
 - ✅ Validate your GitHub token and check permissions
-- ✅ Verify repository access
-- ✅ Auto-detect your test framework (pytest, jest, etc.)
-- ✅ Analyze your repository structure
-- ✅ Guide you through optional configuration
+- ✅ Verify repository access (reads your target repo)
+- ✅ Clone and analyze your repository structure (shallow clone)
+- ✅ Auto-detect your test framework (pytest, jest, playwright, etc.)
+- ✅ Check repository compatibility (language, framework, size)
+- ✅ Guide you through optional configuration (optimization, coverage)
 - ✅ Generate `.env` file with all your settings
-- ✅ Track state for seamless re-configuration
+- ✅ Create `.tool_state.json` to track configuration and usage
+- ✅ Allow re-running to update existing configuration
 
 **Choose your setup method:**
 - **Option 1: Guided Setup** (Recommended) - 3-5 minutes
-  - Step-by-step with validation and auto-detection
+  - Step-by-step with real-time validation and auto-detection
+  - Retry logic for credential errors
+  - Configuration summary with edit capability
 - **Option 2: Manual Setup** - 1-2 minutes
   - For experienced users who prefer editing `.env` directly
+  - Shows examples and references
 
-See [ONBOARDING_GUIDE.md](ONBOARDING_GUIDE.md) for detailed walkthrough.
+**See [ONBOARDING_GUIDE.md](ONBOARDING_GUIDE.md) for detailed walkthrough with screenshots.**
 
 ### 3. Start the Service
 
@@ -184,20 +207,17 @@ cd backend
 python -m uvicorn app.main:app --reload --port 8000
 ```
 
-You should see:
+You should see configuration loaded from your `.tool_state.json` and `.env`:
 ```
 INFO:     Started server process
-INFO:     ════════════════════════════════════════════════════════════
-INFO:     Configuration loaded successfully!
-INFO:     ════════════════════════════════════════════════════════════
-INFO:     Repository: owner/repository-name
-INFO:     Framework: pytest
-INFO:     Language: Python
-INFO:     Features enabled: Test Generation, Coverage Analysis, Test Optimization
-INFO:     ════════════════════════════════════════════════════════════
-INFO:     Ready to generate tests! 🚀
-INFO:     ════════════════════════════════════════════════════════════
+INFO:     Starting GitHub Test Authoring Tool API
+INFO:     Configuration loaded successfully.
+INFO:     Current GitHub Repo: owner/repository-name
+INFO:     OpenAI Model: gpt-4o-mini
+INFO:     Uvicorn running on http://0.0.0.0:8000
 ```
+
+**Note**: If configuration is missing, the server will show an error. Run `python onboard.py` to configure.
 
 ### 4. Create a GitHub Issue
 
@@ -338,10 +358,21 @@ curl -X POST http://localhost:8000/github/generate-tests -d '{"issue_number": 12
 
 ```
 cnbc_testauhtoringtool/
+├── onboard.py                           # 🎯 Interactive onboarding script (START HERE!)
+├── ONBOARDING_GUIDE.md                  # Detailed onboarding walkthrough
+│
 ├── backend/
 │   ├── app/
 │   │   ├── main.py                      # FastAPI app entry point
 │   │   ├── github_webhook.py            # API endpoints & orchestration
+│   │   │
+│   │   ├── config/                      # ⚙️ Configuration & State Management
+│   │   │   ├── state_manager.py         # State tracking (.tool_state.json)
+│   │   │   ├── models.py                # Configuration Pydantic models
+│   │   │   ├── validator.py             # API credential validators
+│   │   │   ├── loader.py                # Config loader (state + .env)
+│   │   │   ├── cli_helpers.py           # Terminal UI utilities
+│   │   │   └── compatibility.py         # Repository compatibility checker
 │   │   │
 │   │   ├── github/                      # 📥 GitHub Data Reader
 │   │   │   ├── client.py                # GitHub API client (fetch issues, search, clone)
@@ -352,15 +383,17 @@ cnbc_testauhtoringtool/
 │   │   │
 │   │   ├── coverage/                    # 📊 Feature 2: Coverage Analysis
 │   │   │   ├── coverage_analyzer.py     # Main coverage orchestrator
-│   │   │   ├── python_coverage.py       # Python coverage runner
-│   │   │   ├── javascript_coverage.py   # JavaScript coverage runner
+│   │   │   ├── coverage_models.py       # Coverage data models
+│   │   │   ├── python_coverage.py       # Python coverage runner (pytest-cov)
+│   │   │   ├── javascript_coverage.py   # JavaScript coverage runner (jest/nyc)
 │   │   │   ├── gap_analyzer.py          # Identifies uncovered code
 │   │   │   └── report_builder.py        # Generates coverage reports
 │   │   │
 │   │   ├── optimizers/                  # 🎯 Feature 3: Test Optimization
 │   │   │   ├── test_optimizer.py        # Main optimization orchestrator
-│   │   │   ├── similarity_analyzer.py   # Detects similar tests
-│   │   │   ├── redundancy_detector.py   # Finds redundant/outdated tests
+│   │   │   ├── models.py                # Optimization data models
+│   │   │   ├── similarity_analyzer.py   # Detects similar tests (embeddings)
+│   │   │   ├── redundancy_detector.py   # Finds redundant/outdated tests (AST)
 │   │   │   ├── ai_suggestions.py        # AI-powered recommendations
 │   │   │   └── report_builder.py        # Generates optimization reports
 │   │   │
@@ -371,19 +404,29 @@ cnbc_testauhtoringtool/
 │   │   │   └── test_framework.py        # Test framework detector
 │   │   │
 │   │   └── models/                      # 📋 Data Models
-│   │       └── github_issue.py          # Pydantic models
+│   │       └── github_issue.py          # GitHub issue Pydantic models
 │   │
 │   ├── requirements.txt                 # Python dependencies
 │   └── Dockerfile                       # Container configuration
 │
-├── docs/                                 # 📚 Documentation
-│   ├── COVERAGE_GUIDE.md
-│   ├── TEST_OPTIMIZATION_GUIDE.md
-│   └── README.md
+├── docs/                                # 📚 Documentation
+│   ├── COVERAGE_GUIDE.md                # Coverage feature deep dive
+│   ├── COVERAGE_IMPLEMENTATION.md       # Coverage implementation details
+│   ├── TEST_OPTIMIZATION_GUIDE.md       # Optimization feature deep dive
+│   ├── TEST_OPTIMIZATION_IMPLEMENTATION.md  # Optimization implementation details
+│   ├── OPTIMIZATION_QUICKSTART.md       # Quick setup for optimization
+│   └── README.md                        # Documentation index
 │
 ├── examples/                            # 💡 Usage Examples
-├── .env.example                         # Environment template
+│   ├── generate_tests_example.sh        # Example API calls
+│   └── sample_github_issue.md           # Example issue format
+│
+├── .env.example                         # Environment template (reference only)
+├── .env                                 # Your config (auto-generated by onboard.py)
+├── .tool_state.json                     # Tool state (auto-generated, gitignored)
 ├── docker-compose.yml                   # Docker setup
+├── QUICK_START.md                       # Quick start guide
+├── CHANGELOG.md                         # Version history
 └── README.md                            # This file
 ```
 
@@ -618,19 +661,43 @@ test.describe('User Authentication', () => {
 });
 ```
 
+## 🔄 Updating Configuration
+
+To update your configuration (change API keys, switch repos, enable/disable features):
+
+```bash
+# Re-run the onboarding script
+python onboard.py
+```
+
+The script will:
+- Detect existing configuration
+- Offer to keep or update each setting
+- Backup your old configuration
+- Generate new `.env` and `.tool_state.json` files
+
 ## 🐛 Troubleshooting
 
-### Missing Environment Variables
+### Missing Configuration
 
-**Error**: `Missing environment variables: GITHUB_TOKEN, GITHUB_REPO`
+**Error**: `Configuration not found` or `Missing environment variables`
 
 **Solution**: 
 ```bash
-# Check your .env file exists
-ls -la .env
+# Run onboarding to create configuration
+python onboard.py
+```
 
-# Verify variables are set
-cat .env | grep GITHUB
+### Invalid Configuration
+
+**Error**: `Failed to load configuration` or `Invalid API key`
+
+**Solution**:
+```bash
+# Re-run onboarding to update configuration
+python onboard.py
+
+# The script will validate your credentials in real-time
 ```
 
 ### GitHub Authentication Failed
@@ -671,6 +738,22 @@ cat .env | grep GITHUB
 
 ## 🔧 Configuration
 
+### Configuration Files
+
+The tool uses two configuration sources:
+
+1. **`.env`** - Environment variables (auto-generated by `onboard.py`)
+   - Contains API keys, repository info, and feature toggles
+   - Gitignored for security
+   
+2. **`.tool_state.json`** - Tool state (auto-generated by `onboard.py`)
+   - Tracks configuration history
+   - Records usage statistics
+   - Enables re-configuration
+   - Gitignored for security
+
+**Both files are created automatically during onboarding. You should not need to edit them manually.**
+
 ### Core Environment Variables
 
 | Variable | Required | Description | Default |
@@ -710,10 +793,20 @@ SIMILARITY_THRESHOLD=0.7
 
 To modify test generation behavior, edit:
 
+**Configuration Models**: `backend/app/config/models.py`
+- Add new configuration options
+- Modify validation rules
+- Extend feature settings
+
 **Framework Detection**: `backend/app/detectors/test_framework.py`
 - Add new frameworks
 - Modify detection patterns
 - Change test directory conventions
+
+**Repository Compatibility**: `backend/app/config/compatibility.py`
+- Add language support
+- Modify framework detection
+- Adjust size limits
 
 **AI Prompts**: `backend/app/llm/test_author.py`
 - Adjust system prompts
@@ -727,10 +820,20 @@ To modify test generation behavior, edit:
 
 ## 📚 Documentation
 
-For detailed guides on specific features, see:
+### Getting Started
+- **[Onboarding Guide](ONBOARDING_GUIDE.md)** - Complete setup walkthrough with guided or manual options
+- **[Quick Start Guide](QUICK_START.md)** - Fast setup instructions
+
+### Feature Guides
 - **[Test Optimization Guide](docs/TEST_OPTIMIZATION_GUIDE.md)** - Similarity detection, AI suggestions, redundancy detection
+- **[Test Optimization Implementation](docs/TEST_OPTIMIZATION_IMPLEMENTATION.md)** - Technical implementation details
 - **[Coverage Integration Guide](docs/COVERAGE_GUIDE.md)** - Before/after coverage, gap analysis
-- **[Quick Start Guide](docs/OPTIMIZATION_QUICKSTART.md)** - Fast setup for optimization features
+- **[Coverage Implementation](docs/COVERAGE_IMPLEMENTATION.md)** - Technical implementation details
+- **[Optimization Quick Start](docs/OPTIMIZATION_QUICKSTART.md)** - Fast setup for optimization features
+
+### Repository Information
+- **[Changelog](CHANGELOG.md)** - Version history and updates
+- **[Cleanup Summary](CLEANUP_SUMMARY.md)** - Repository cleanup documentation
 - **[All Documentation](docs/)** - Complete documentation index
 
 ## 🚀 Future Enhancements
@@ -751,7 +854,10 @@ Potential extensions for this POC:
 ### Running Locally
 
 ```bash
-# Start with hot reload
+# 1. Complete onboarding first
+python onboard.py
+
+# 2. Start with hot reload
 cd backend
 python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
@@ -766,18 +872,46 @@ curl http://localhost:8000/health
 curl -X POST http://localhost:8000/github/generate-tests \
   -H "Content-Type: application/json" \
   -d '{"issue_number": 1}'
+  
+# Analyze coverage
+curl -X POST http://localhost:8000/github/analyze-coverage \
+  -H "Content-Type: application/json" \
+  -d '{"test_path": "tests/"}'
+  
+# Optimize tests
+curl -X POST http://localhost:8000/github/optimize-tests \
+  -H "Content-Type: application/json" \
+  -d '{"test_path": "tests/"}'
 ```
 
 ### Viewing Logs
 
 ```bash
-# Logs show each step
-INFO: Fetching issue from GitHub
+# Logs show each step with configuration info
+INFO: Starting GitHub Test Authoring Tool API
+INFO: Configuration loaded successfully.
+INFO: Current GitHub Repo: owner/repo
+INFO: OpenAI Model: gpt-4o-mini
+INFO: Fetching issue #1 from GitHub
 INFO: Detected framework: pytest
 INFO: Found 3 relevant code files
 INFO: Generating tests with AI
 INFO: Creating branch: auto-tests/issue-1
 INFO: Created PR #45: 🤖 Automated Tests for #1
+INFO: Updating tool state with usage statistics
+```
+
+### State Management
+
+The tool maintains state in `.tool_state.json`:
+- **Configuration history**: Track when settings were changed
+- **Usage statistics**: Count of tests generated, PRs created
+- **Last used**: Timestamp of last operation
+- **Repository metadata**: Framework, language, last analysis
+
+View state:
+```bash
+cat .tool_state.json | python -m json.tool
 ```
 
 ## 🤝 Contributing
